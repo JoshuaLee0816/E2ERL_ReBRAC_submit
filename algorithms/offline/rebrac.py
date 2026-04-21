@@ -65,6 +65,8 @@ class Config:
     # general params
     train_seed: int = 0
     eval_seed: int = 42
+    # E2E Modification
+    E2E_beta: float = 0.1
 
     def __post_init__(self):
         self.name = f"{self.name}-{self.dataset_name}-{str(uuid.uuid4())[:8]}"
@@ -485,6 +487,7 @@ def update_critic(
     policy_noise: float,
     noise_clip: float,
     metrics: Metrics,
+    E2E_beta: float,
 ) -> Tuple[jax.random.PRNGKey, TrainState, Metrics]:
     key, actions_key = jax.random.split(key)
 
@@ -507,7 +510,14 @@ def update_critic(
         # [N, batch_size] - [1, batch_size]
         q = critic.apply_fn(critic_params, batch["states"], batch["actions"])
         q_min = q.min(0).mean()
-        loss = ((q - target_q[None, ...]) ** 2).mean(1).sum(0)
+        # --- Original Bellman Residual ---
+        # loss = ((q - target_q[None, ...]) ** 2).mean(1).sum(0)
+        mse_loss = ((q - target_q[None, ...]) ** 2).mean(1).sum(0)
+        # --- E2ERL Modification ---
+        # Implementation: L_MSE - E2E_beta * E[Q]
+        E2E_loss = -E2E_beta * q.mean() 
+        loss = mse_loss + E2E_loss
+
         return loss, q_min
 
     (loss, q_min), grads = jax.value_and_grad(critic_loss_fn, has_aux=True)(
@@ -536,6 +546,7 @@ def update_td3(
     policy_noise: float,
     noise_clip: float,
     normalize_q: bool,
+    E2E_beta: float,
 ) -> Tuple[jax.random.PRNGKey, TrainState, TrainState, Metrics]:
     key, new_critic, new_metrics = update_critic(
         key,
@@ -548,6 +559,7 @@ def update_td3(
         policy_noise,
         noise_clip,
         metrics,
+        E2E_beta=E2E_beta,
     )
     key, new_actor, new_critic, new_metrics = update_actor(
         key, actor, new_critic, batch, actor_bc_coef, tau, normalize_q, new_metrics
@@ -567,6 +579,7 @@ def update_td3_no_targets(
     tau: float,
     policy_noise: float,
     noise_clip: float,
+    E2E_beta: float,
 ) -> Tuple[jax.random.PRNGKey, TrainState, TrainState, Metrics]:
     key, new_critic, new_metrics = update_critic(
         key,
@@ -579,6 +592,7 @@ def update_td3_no_targets(
         policy_noise,
         noise_clip,
         metrics,
+        E2E_beta=E2E_beta,
     )
     return key, actor, new_critic, new_metrics
 
@@ -653,6 +667,7 @@ def main(config: Config):
         policy_noise=config.policy_noise,
         noise_clip=config.noise_clip,
         normalize_q=config.normalize_q,
+        E2E_beta=config.E2E_beta,
     )
 
     update_td3_no_targets_partial = partial(
@@ -663,6 +678,7 @@ def main(config: Config):
         tau=config.tau,
         policy_noise=config.policy_noise,
         noise_clip=config.noise_clip,
+        E2E_beta=config.E2E_beta,
     )
 
     def td3_loop_update_step(i: int, carry: TrainState):
