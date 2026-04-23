@@ -10,7 +10,6 @@ Output: 4-panel figure
   Panel 2 : Q landscape  beta = 0.001
   Panel 3 : Q landscape  beta = 0.005
 
-No training. No wandb. Pure offline visualization.
 """
 
 import argparse
@@ -91,9 +90,10 @@ def _draw_maze_panel(ax, obs: np.ndarray, s_anchor: np.ndarray, radius: float) -
     ax.set_ylim(p_min, p_ymax)
     ax.set_aspect("equal")
     ax.grid(False)
+    ax.set_facecolor("white")
     ax.set_xticks([0, 1, 2, 3, 4])
     ax.set_yticks([0, 1, 2, 3, 4])
-    ax.tick_params(axis='both', which='major', labelsize=4)
+    ax.tick_params(axis='both', which='major', labelsize=4, length=2, width=0.4)
     ax.set_xlabel("x", fontsize=5)
     ax.set_ylabel("y", fontsize=5)
     ax.set_title("Anchor in UMaze", fontsize=6, fontweight="bold")
@@ -297,7 +297,7 @@ def _draw_panel(ax, q_2d, grad_2d, ax_1d, ay_1d,
     ax.set_ylim(-1, 1)
     ax.set_xlabel(r"$a_x$", fontsize=5)
     ax.set_ylabel(r"$a_y$", fontsize=5)
-    ax.tick_params(axis='both', which='major', labelsize=4)
+    ax.tick_params(axis='both', which='major', labelsize=4, length=2, width=0.4)
     ax.set_title(rf"E2E$\beta$ = {beta_val}", fontsize=6, fontweight="bold")
     return im
 
@@ -329,7 +329,13 @@ def make_figure(q0, g0, q1, g1, q2, g2, ax_1d, ay_1d,
     for im, ax_ in zip([im0, im1, im2], axes[1:]):
         cb = fig.colorbar(im, ax=ax_, fraction=0.046, pad=0.02)
         cb.set_label("Q value", fontsize=5)
-        cb.ax.tick_params(labelsize=4)
+        cb.ax.tick_params(labelsize=4, length=2, width=0.4)
+        for spine in cb.ax.spines.values():
+            spine.set_linewidth(0.4)
+
+    for ax_ in axes:
+        for spine in ax_.spines.values():
+            spine.set_linewidth(0.4)
 
     plt.subplots_adjust(left=0.05, right=0.93, top=0.93, bottom=0.10, wspace=0.7)
 
