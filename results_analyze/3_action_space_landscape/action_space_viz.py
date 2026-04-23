@@ -9,6 +9,8 @@ Output: 4-panel figure
   Panel 1 : Q landscape  beta = 0
   Panel 2 : Q landscape  beta = 0.001
   Panel 3 : Q landscape  beta = 0.005
+
+No training. No wandb. Pure offline visualization.
 """
 
 import argparse
@@ -26,6 +28,8 @@ matplotlib.use("Agg")
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
+
+A4_W, A4_H = 8.27, 2.8
 
 _UMAZE_CFG = {
     "maze_array": [
@@ -77,22 +81,24 @@ def _draw_maze_panel(ax, obs: np.ndarray, s_anchor: np.ndarray, radius: float) -
         fill=False, edgecolor="red", linewidth=1.5, linestyle="--", zorder=4,
     ))
 
-    # anchor star — label
-    ax.scatter(s_anchor[0], s_anchor[1], s=150, marker="*", c="red", zorder=5,
+    ax.scatter(s_anchor[0], s_anchor[1], s=10, marker="*", c="red", zorder=5,
                label=(
-                   f"anchor\n"
-                   rf"$s$=[{s_anchor[0]:.2f}, {s_anchor[1]:.2f},"
+                   rf"anchor  $s$=[{s_anchor[0]:.2f}, {s_anchor[1]:.2f},"
                    rf" {s_anchor[2]:.2f}, {s_anchor[3]:.2f}]"
-                   "\n" r"$(x,\,y,\,v_x,\,v_y)$"
                ))
 
     ax.set_xlim(p_min, p_xmax)
     ax.set_ylim(p_min, p_ymax)
     ax.set_aspect("equal")
-    ax.set_xlabel("x", fontsize=11)
-    ax.set_ylabel("y", fontsize=11)
-    ax.set_title("Anchor in UMaze", fontsize=12, fontweight="bold")
-    ax.legend(loc="upper left", fontsize=7.5, framealpha=0.6, markerscale=1.5)
+    ax.grid(False)
+    ax.set_xticks([0, 1, 2, 3, 4])
+    ax.set_yticks([0, 1, 2, 3, 4])
+    ax.tick_params(axis='both', which='major', labelsize=4)
+    ax.set_xlabel("x", fontsize=5)
+    ax.set_ylabel("y", fontsize=5)
+    ax.set_title("Anchor in UMaze", fontsize=6, fontweight="bold")
+    ax.legend(loc="upper left", fontsize=3, framealpha=0.6, markerscale=1.0,
+              handlelength=0.5, handletextpad=0.4, borderpad=0.2, labelspacing=0.2)
 
 
 # Model (same architecture as rebrac.py)
@@ -183,7 +189,7 @@ def load_critic(ckpt_dir: str,
 # Dataset & anchor
 
 def load_d4rl(dataset_name: str):
-    import d4rl  
+    import d4rl  # noqa
     import gym
     env = gym.make(dataset_name)
     ds = env.get_dataset()
@@ -277,20 +283,22 @@ def _draw_panel(ax, q_2d, grad_2d, ax_1d, ay_1d,
     if len(support_actions) > 0:
         ax.scatter(
             support_actions[:, 0], support_actions[:, 1],
-            c="red", s=25, linewidths=0, zorder=5,
+            c="red", s=3, linewidths=0, zorder=5,
             label=f"data support (n={len(support_actions)}, r={radius})",
         )
-        ax.legend(loc="upper left", fontsize=8,
-                  framealpha=0.55, edgecolor="none")
+        ax.legend(loc="upper left", fontsize=3,
+                  framealpha=0.55, edgecolor="none",
+                  handlelength=0.5, handletextpad=0.2, borderpad=0.2)
 
     ax.axhline(0, color="gray", lw=0.6, ls="--", alpha=0.5, zorder=2)
     ax.axvline(0, color="gray", lw=0.6, ls="--", alpha=0.5, zorder=2)
 
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
-    ax.set_xlabel(r"$a_x$", fontsize=12)
-    ax.set_ylabel(r"$a_y$", fontsize=12)
-    ax.set_title(rf"E2E$\beta$ = {beta_val}", fontsize=13, fontweight="bold")
+    ax.set_xlabel(r"$a_x$", fontsize=5)
+    ax.set_ylabel(r"$a_y$", fontsize=5)
+    ax.tick_params(axis='both', which='major', labelsize=4)
+    ax.set_title(rf"E2E$\beta$ = {beta_val}", fontsize=6, fontweight="bold")
     return im
 
 
@@ -305,8 +313,8 @@ def make_figure(q0, g0, q1, g1, q2, g2, ax_1d, ay_1d,
     print(f"[Q range] beta={beta1_val}: [{vmin1:.2f}, {vmax1:.2f}]")
     print(f"[Q range] beta={beta2_val}: [{vmin2:.2f}, {vmax2:.2f}]")
 
-    fig, axes = plt.subplots(1, 4, figsize=(26, 6.0),
-                             gridspec_kw={"width_ratios": [1, 1.3, 1.3, 1.3]})
+    fig, axes = plt.subplots(1, 4, figsize=(A4_W, A4_H),
+                             gridspec_kw={"width_ratios": [1.1, 1.3, 1.3, 1.3]})
 
     _draw_maze_panel(axes[0], obs if obs is not None else np.zeros((0, 4)),
                      s_anchor, radius)
@@ -318,23 +326,23 @@ def make_figure(q0, g0, q1, g1, q2, g2, ax_1d, ay_1d,
     im2 = _draw_panel(axes[3], q2, g2, ax_1d, ay_1d,
                       support_actions, beta2_val, vmin2, vmax2, radius)
 
-    fig.colorbar(im0, ax=axes[1], fraction=0.046, pad=0.04).set_label("Q value", fontsize=10)
-    fig.colorbar(im1, ax=axes[2], fraction=0.046, pad=0.04).set_label("Q value", fontsize=10)
-    fig.colorbar(im2, ax=axes[3], fraction=0.046, pad=0.04).set_label("Q value", fontsize=10)
+    for im, ax_ in zip([im0, im1, im2], axes[1:]):
+        cb = fig.colorbar(im, ax=ax_, fraction=0.046, pad=0.02)
+        cb.set_label("Q value", fontsize=5)
+        cb.ax.tick_params(labelsize=4)
 
-    plt.tight_layout()
-    plt.subplots_adjust(wspace=0.35)
+    plt.subplots_adjust(left=0.05, right=0.93, top=0.93, bottom=0.10, wspace=0.7)
+
+    fig.set_size_inches(A4_W, A4_H)
 
     out_dir = os.path.dirname(os.path.abspath(output_path))
     os.makedirs(out_dir, exist_ok=True)
 
-    # PNG
-    plt.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.savefig(output_path, dpi=150)
     print(f"[Output PNG] {output_path}")
 
-    # PDF
     pdf_path = os.path.splitext(output_path)[0] + ".pdf"
-    plt.savefig(pdf_path, bbox_inches="tight")
+    plt.savefig(pdf_path)
     print(f"[Output PDF] {pdf_path}")
 
     plt.close(fig)
