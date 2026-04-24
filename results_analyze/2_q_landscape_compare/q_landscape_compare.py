@@ -22,6 +22,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Maze configs
 
@@ -194,39 +195,74 @@ def draw_comparison_figure(
     # Shared colour scale for direct comparison
     valid = np.concatenate([qmap0[~np.isnan(qmap0)], qmap1[~np.isnan(qmap1)]])
     vmin, vmax = (float(valid.min()), float(valid.max())) if len(valid) else (0.0, 1.0)
+    vmin, vmax = 35, 95 # Fixed scale for better visual comparison
 
     cmap_obj = plt.get_cmap("viridis").copy()
     cmap_obj.set_bad(color="white")
 
-    fig, axes = plt.subplots(1, 2, figsize=(11, 5))
+    out_dir = os.path.dirname(os.path.abspath(output_path))
+    os.makedirs(out_dir, exist_ok=True)
+    base = os.path.splitext(output_path)[0]
 
-    for ax, qmap, beta_val in zip(axes, [qmap0, qmap1], [beta0_val, beta1_val]):
+    cb_ticks = [float(t) for t in np.linspace(vmin, vmax, 5)]
+
+    # Both figures share identical layout constants so the map axes are
+    # exactly the same physical size whether or not a colorbar is present.
+    FIGSIZE   = (5.5, 5.0)
+    FIG_LEFT   = 0.11
+    FIG_RIGHT  = 0.85
+    FIG_TOP    = 0.95
+    FIG_BOTTOM = 0.10
+
+    for qmap, beta_val, tag, show_cb in [
+        (qmap0, beta0_val, "beta0",    False),
+        (qmap1, beta1_val, "beta0001", True),
+    ]:
+
+        fig, ax = plt.subplots(1, 1, figsize=FIGSIZE)
+        fig.subplots_adjust(left=FIG_LEFT, right=FIG_RIGHT,
+                            top=FIG_TOP,   bottom=FIG_BOTTOM)
+
         masked = np.ma.masked_invalid(qmap)
         im = ax.imshow(masked, origin="lower", extent=extent,
                        cmap=cmap_obj, aspect="equal", vmin=vmin, vmax=vmax)
         _draw_maze_walls(ax, cfg)
-        ax.set_title(rf"E2E$\beta$ = {beta_val}", fontsize=11, fontweight="bold")
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_xlim(p_min, p_xmax)
-        ax.set_ylim(p_min, p_ymax)
-        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04).set_label("Q value", fontsize=10)
 
-    plt.tight_layout()
+        ticks = [0, 1, 2, 3, 4]
+        ax.set_xticks(ticks)
+        ax.set_yticks(ticks)
+        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.set_xlabel("x", fontsize=14)
+        ax.set_ylabel("y", fontsize=14)
+        ax.set_xlim(0, 4)
+        ax.set_ylim(0, 4)
 
-    out_dir = os.path.dirname(os.path.abspath(output_path))
-    os.makedirs(out_dir, exist_ok=True)
+        # append_axes is called for BOTH figures so the maze axes shrinks by
+        # the same amount, keeping the two mazes identical in physical size.
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.15)
 
-    # PNG
-    plt.savefig(output_path, dpi=150, bbox_inches="tight")
-    print(f"[Output PNG] {output_path}")
+        if show_cb:
+            cb = fig.colorbar(im, cax=cax)
+            cb.set_label("Q value", fontsize=14, labelpad=15)
+            cb.set_ticks(cb_ticks)
+            cb.ax.tick_params(labelsize=14)
+        else:
+            cax.set_visible(False)
 
-    # PDF
-    pdf_path = os.path.splitext(output_path)[0] + ".pdf"
-    plt.savefig(pdf_path, bbox_inches="tight")
-    print(f"[Output PDF] {pdf_path}")
+        png_path = f"{base}_{tag}.png"
+        fig.savefig(png_path, dpi=150)
+        pdf_path = f"{base}_{tag}.pdf"
+        fig.savefig(pdf_path)
 
-    plt.close(fig)
+        import sys
+        if os.path.exists(pdf_path):
+            print(f"  ==> [SUCCESS] PDF 存檔成功！")
+            print(f"  ==> 絕對路徑: {os.path.abspath(pdf_path)}")
+        else:
+            print(f"  ==> [ERROR] 檔案未生成，請檢查權限或磁碟空間。")
+            
+        plt.close(fig)
 
 
 # CLI

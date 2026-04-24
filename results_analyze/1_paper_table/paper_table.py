@@ -1,18 +1,23 @@
 """
 paper_table.py
 ==============
-Generate a E2E_ReBRAC big table results from wandb_results_E2EReBRAC.csv. #results_analyze/1_paper_table/data/
+Generate a paper-style CSV table combining CORL baselines (from README)
+and E2ERL results (from results_20260416_e2ebeta0001_01_05.csv).
 
 Outputs:
-  paper_table.csv  
-  paper_table.tex   
+  paper_table.csv   — ready to paste into any online table generator
+  paper_table.tex   — LaTeX booktabs table; E2ERL cells that beat ReBRAC
+                      are highlighted in red with \\textcolor{red}{...}
 """
 
 import csv
 import os
 import re
 
+# ---------------------------------------------------------------------------
 # 1. Baseline data (Last Scores) from CORL README
+#    Format: "mean ± std"
+# ---------------------------------------------------------------------------
 
 BASELINES = {
     # ── Locomotion ──────────────────────────────────────────────────────────
@@ -20,7 +25,7 @@ BASELINES = {
         "BC":       "42.40 ± 0.19",
         "10%BC":    "42.46 ± 0.70",
         "TD3+BC":   "48.10 ± 0.18",
-        "AWAC":     "49.46 ± 0.62",
+        "AWAC":     "50.02 ± 0.27",
         "CQL":      "47.04 ± 0.22",
         "IQL":      "48.31 ± 0.22",
         "ReBRAC":   "64.04 ± 0.68",
@@ -32,7 +37,7 @@ BASELINES = {
         "BC":       "35.66 ± 2.33",
         "10%BC":    "23.59 ± 6.95",
         "TD3+BC":   "44.84 ± 0.59",
-        "AWAC":     "44.70 ± 0.69",
+        "AWAC":     "45.13 ± 0.88",
         "CQL":      "45.04 ± 0.27",
         "IQL":      "44.46 ± 0.22",
         "ReBRAC":   "51.18 ± 0.31",
@@ -44,7 +49,7 @@ BASELINES = {
         "BC":       "55.95 ± 7.35",
         "10%BC":    "90.10 ± 2.45",
         "TD3+BC":   "90.78 ± 6.04",
-        "AWAC":     "93.62 ± 0.41",
+        "AWAC":     "95.00 ± 0.61",
         "CQL":      "95.63 ± 0.42",
         "IQL":      "94.74 ± 0.52",
         "ReBRAC":   "103.80 ± 2.95",
@@ -56,7 +61,7 @@ BASELINES = {
         "BC":       "53.51 ± 1.76",
         "10%BC":    "55.48 ± 7.30",
         "TD3+BC":   "60.37 ± 3.49",
-        "AWAC":     "74.45 ± 9.14",
+        "AWAC":     "63.02 ± 4.56",
         "CQL":      "59.08 ± 3.77",
         "IQL":      "67.53 ± 3.78",
         "ReBRAC":   "102.29 ± 0.17",
@@ -68,7 +73,7 @@ BASELINES = {
         "BC":       "29.81 ± 2.07",
         "10%BC":    "70.42 ± 8.66",
         "TD3+BC":   "64.42 ± 21.52",
-        "AWAC":     "96.39 ± 5.28",
+        "AWAC":     "98.88 ± 2.07",
         "CQL":      "95.11 ± 5.27",
         "IQL":      "97.43 ± 6.39",
         "ReBRAC":   "94.98 ± 6.53",
@@ -80,7 +85,7 @@ BASELINES = {
         "BC":       "52.30 ± 4.01",
         "10%BC":    "111.16 ± 1.03",
         "TD3+BC":   "101.17 ± 9.07",
-        "AWAC":     "52.73 ± 37.47",
+        "AWAC":     "101.90 ± 6.22",
         "CQL":      "99.26 ± 10.91",
         "IQL":      "107.42 ± 7.80",
         "ReBRAC":   "109.45 ± 2.34",
@@ -92,7 +97,7 @@ BASELINES = {
         "BC":       "63.23 ± 16.24",
         "10%BC":    "67.34 ± 5.17",
         "TD3+BC":   "82.71 ± 4.78",
-        "AWAC":     "66.53 ± 26.04",
+        "AWAC":     "68.52 ± 27.19",
         "CQL":      "80.75 ± 3.28",
         "IQL":      "80.91 ± 3.17",
         "ReBRAC":   "85.82 ± 0.77",
@@ -104,7 +109,7 @@ BASELINES = {
         "BC":       "21.80 ± 10.15",
         "10%BC":    "54.35 ± 6.34",
         "TD3+BC":   "85.62 ± 4.01",
-        "AWAC":     "82.20 ± 1.05",
+        "AWAC":     "80.62 ± 3.58",
         "CQL":      "73.09 ± 13.22",
         "IQL":      "82.15 ± 3.03",
         "ReBRAC":   "84.25 ± 2.25",
@@ -116,7 +121,7 @@ BASELINES = {
         "BC":       "98.96 ± 15.98",
         "10%BC":    "108.70 ± 0.25",
         "TD3+BC":   "110.03 ± 0.36",
-        "AWAC":     "49.41 ± 38.16",
+        "AWAC":     "111.44 ± 1.62",
         "CQL":      "109.56 ± 0.39",
         "IQL":      "111.72 ± 0.86",
         "ReBRAC":   "111.86 ± 0.43",
@@ -129,7 +134,7 @@ BASELINES = {
         "BC":       "55.25 ± 4.15",
         "10%BC":    "65.75 ± 5.26",
         "TD3+BC":   "70.75 ± 39.18",
-        "AWAC":     "57.75 ± 10.28",
+        "AWAC":     "56.75 ± 9.09",
         "CQL":      "92.75 ± 1.92",
         "IQL":      "77.00 ± 5.52",
         "ReBRAC":   "97.75 ± 1.48",
@@ -141,7 +146,7 @@ BASELINES = {
         "BC":       "47.25 ± 4.09",
         "10%BC":    "44.00 ± 1.00",
         "TD3+BC":   "44.75 ± 11.61",
-        "AWAC":     "58.00 ± 7.68",
+        "AWAC":     "54.75 ± 8.01",
         "CQL":      "37.25 ± 3.70",
         "IQL":      "54.25 ± 5.54",
         "ReBRAC":   "83.50 ± 7.02",
@@ -202,7 +207,7 @@ BASELINES = {
         "BC":       "0.36 ± 8.69",
         "10%BC":    "12.18 ± 4.29",
         "TD3+BC":   "29.41 ± 12.31",
-        "AWAC":     "82.67 ± 28.30",
+        "AWAC":     "65.65 ± 5.34",
         "CQL":      "-8.90 ± 6.11",
         "IQL":      "42.11 ± 0.58",
         "ReBRAC":   "106.87 ± 22.16",
@@ -214,7 +219,7 @@ BASELINES = {
         "BC":       "0.79 ± 3.25",
         "10%BC":    "14.25 ± 2.33",
         "TD3+BC":   "59.45 ± 36.25",
-        "AWAC":     "52.88 ± 55.12",
+        "AWAC":     "84.63 ± 35.54",
         "CQL":      "86.11 ± 9.68",
         "IQL":      "34.85 ± 2.72",
         "ReBRAC":   "105.11 ± 31.67",
@@ -226,7 +231,7 @@ BASELINES = {
         "BC":       "2.26 ± 4.39",
         "10%BC":    "11.32 ± 5.10",
         "TD3+BC":   "97.10 ± 25.41",
-        "AWAC":     "209.13 ± 8.19",
+        "AWAC":     "215.50 ± 3.11",
         "CQL":      "23.75 ± 36.70",
         "IQL":      "61.72 ± 3.50",
         "ReBRAC":   "78.33 ± 61.77",
@@ -239,7 +244,7 @@ BASELINES = {
         "BC":       "71.03 ± 6.26",
         "10%BC":    "26.99 ± 9.60",
         "TD3+BC":   "-3.88 ± 0.21",
-        "AWAC":     "81.12 ± 13.47",
+        "AWAC":     "76.65 ± 11.71",
         "CQL":      "13.71 ± 16.98",
         "IQL":      "78.49 ± 8.21",
         "ReBRAC":   "103.16 ± 8.49",
@@ -251,7 +256,7 @@ BASELINES = {
         "BC":       "51.92 ± 15.15",
         "10%BC":    "46.67 ± 14.25",
         "TD3+BC":   "5.13 ± 5.28",
-        "AWAC":     "89.56 ± 15.57",
+        "AWAC":     "85.72 ± 16.92",
         "CQL":      "1.04 ± 6.62",
         "IQL":      "83.42 ± 8.19",
         "ReBRAC":   "102.79 ± 7.84",
@@ -263,7 +268,7 @@ BASELINES = {
         "BC":       "109.65 ± 7.28",
         "10%BC":    "114.96 ± 2.96",
         "TD3+BC":   "122.53 ± 21.27",
-        "AWAC":     "160.37 ± 1.21",
+        "AWAC":     "159.91 ± 1.87",
         "CQL":      "-1.41 ± 2.34",
         "IQL":      "128.05 ± 9.21",
         "ReBRAC":   "152.16 ± 6.33",
@@ -275,7 +280,7 @@ BASELINES = {
         "BC":       "3.03 ± 3.39",
         "10%BC":    "-0.19 ± 0.02",
         "TD3+BC":   "1.02 ± 0.24",
-        "AWAC":     "3.37 ± 1.93",
+        "AWAC":     "1.01 ± 0.51",
         "CQL":      "0.14 ± 0.11",
         "IQL":      "1.79 ± 0.80",
         "ReBRAC":   "0.24 ± 0.24",
@@ -287,7 +292,7 @@ BASELINES = {
         "BC":       "0.55 ± 0.16",
         "10%BC":    "0.12 ± 0.08",
         "TD3+BC":   "0.25 ± 0.01",
-        "AWAC":     "0.21 ± 0.24",
+        "AWAC":     "1.27 ± 2.11",
         "CQL":      "0.30 ± 0.01",
         "IQL":      "1.50 ± 0.69",
         "ReBRAC":   "5.00 ± 3.75",
@@ -299,7 +304,7 @@ BASELINES = {
         "BC":       "126.78 ± 0.64",
         "10%BC":    "121.75 ± 7.67",
         "TD3+BC":   "3.11 ± 0.03",
-        "AWAC":     "127.06 ± 0.29",
+        "AWAC":     "127.08 ± 0.13",
         "CQL":      "0.26 ± 0.01",
         "IQL":      "128.68 ± 0.33",
         "ReBRAC":   "133.62 ± 0.27",
@@ -311,7 +316,7 @@ BASELINES = {
         "BC":       "2.34 ± 4.00",
         "10%BC":    "-0.13 ± 0.07",
         "TD3+BC":   "-0.33 ± 0.01",
-        "AWAC":     "4.60 ± 1.90",
+        "AWAC":     "2.39 ± 2.26",
         "CQL":      "5.53 ± 1.31",
         "IQL":      "3.26 ± 1.83",
         "ReBRAC":   "-0.10 ± 0.01",
@@ -323,7 +328,7 @@ BASELINES = {
         "BC":       "-0.09 ± 0.03",
         "10%BC":    "0.29 ± 0.59",
         "TD3+BC":   "-0.34 ± 0.01",
-        "AWAC":     "0.93 ± 1.66",
+        "AWAC":     "-0.01 ± 0.01",
         "CQL":      "-0.33 ± 0.01",
         "IQL":      "3.07 ± 1.75",
         "ReBRAC":   "0.06 ± 0.05",
@@ -335,7 +340,7 @@ BASELINES = {
         "BC":       "105.35 ± 0.09",
         "10%BC":    "104.04 ± 1.46",
         "TD3+BC":   "-0.33 ± 0.01",
-        "AWAC":     "104.85 ± 0.24",
+        "AWAC":     "104.57 ± 0.31",
         "CQL":      "-0.32 ± 0.02",
         "IQL":      "106.65 ± 0.25",
         "ReBRAC":   "106.37 ± 0.29",
@@ -347,7 +352,7 @@ BASELINES = {
         "BC":       "0.04 ± 0.03",
         "10%BC":    "-0.14 ± 0.08",
         "TD3+BC":   "-0.29 ± 0.01",
-        "AWAC":     "0.05 ± 0.03",
+        "AWAC":     "0.45 ± 0.53",
         "CQL":      "0.06 ± 0.03",
         "IQL":      "0.12 ± 0.04",
         "ReBRAC":   "0.16 ± 0.30",
@@ -359,7 +364,7 @@ BASELINES = {
         "BC":       "-0.06 ± 0.01",
         "10%BC":    "-0.00 ± 0.02",
         "TD3+BC":   "-0.30 ± 0.01",
-        "AWAC":     "-0.04 ± 0.04",
+        "AWAC":     "-0.01 ± 0.03",
         "CQL":      "-0.29 ± 0.01",
         "IQL":      "0.04 ± 0.01",
         "ReBRAC":   "1.66 ± 2.59",
@@ -371,7 +376,7 @@ BASELINES = {
         "BC":       "107.58 ± 1.20",
         "10%BC":    "97.90 ± 5.21",
         "TD3+BC":   "-1.73 ± 0.96",
-        "AWAC":     "108.87 ± 0.85",
+        "AWAC":     "109.52 ± 0.47",
         "CQL":      "-0.30 ± 0.02",
         "IQL":      "106.11 ± 4.02",
         "ReBRAC":   "107.52 ± 2.28",
@@ -425,12 +430,10 @@ DOMAIN_ENVS = {
 
 BASELINE_COLS = ["BC", "10%BC", "TD3+BC", "AWAC", "CQL", "IQL", "ReBRAC", "SAC-N", "EDAC", "DT"]
 E2ERL_COLS    = ["E2ERL(β=0.001)", "E2ERL(β=0.0025)", "E2ERL(β=0.005)", "E2ERL(β=0.0075)", "E2ERL(β=0.01)", "E2ERL(β=0.05)", "E2ERL(β=0.1)", "E2ERL(β=0.5)"]
-"""
-You can adjust the E2ERL_COLS list if you want to include fewer or more β values in the table.
-"""
 
-
+# ---------------------------------------------------------------------------
 # 2. Load E2ERL results
+# ---------------------------------------------------------------------------
 
 SCRIPT_DIR    = os.path.dirname(os.path.abspath(__file__))
 E2ERL_CSV     = os.path.join(SCRIPT_DIR, "data", "wandb_results_E2EReBRAC.csv")
@@ -456,7 +459,9 @@ def load_e2erl(path: str) -> dict:
             }
     return results
 
+# ---------------------------------------------------------------------------
 # 3. Compute per-domain averages (mean only, ignoring N/A)
+# ---------------------------------------------------------------------------
 
 def mean_only(val: str) -> float | None:
     """Extract the mean from 'mean ± std' string."""
@@ -479,8 +484,9 @@ def domain_avg(rows: list[dict], cols: list[str]) -> dict:
         avgs[c] = f"{sums[c] / counts[c]:.2f}" if counts[c] > 0 else "N/A"
     return avgs
 
-
+# ---------------------------------------------------------------------------
 # 4. Build row data (shared between CSV and LaTeX writers)
+# ---------------------------------------------------------------------------
 
 def build_rows(e2erl: dict) -> list[tuple[str, list[dict]]]:
     """Return list of (domain, rows) where each row is a plain dict."""
@@ -499,7 +505,9 @@ def build_rows(e2erl: dict) -> list[tuple[str, list[dict]]]:
     return result
 
 
+# ---------------------------------------------------------------------------
 # 5. CSV writer
+# ---------------------------------------------------------------------------
 
 def write_csv(domain_data: list[tuple[str, list[dict]]]):
     all_cols = ["Task-Name"] + BASELINE_COLS + E2ERL_COLS
@@ -518,12 +526,24 @@ def write_csv(domain_data: list[tuple[str, list[dict]]]):
     print(f"CSV saved  → {OUTPUT_CSV}")
 
 
+# ---------------------------------------------------------------------------
 # 6. LaTeX writer
+#    - Uses booktabs (\toprule / \midrule / \bottomrule)
+#    - E2ERL cells whose mean > ReBRAC mean are wrapped in \textcolor{red}{...}
+# ---------------------------------------------------------------------------
 
-def latex_cell(val: str, highlight: bool) -> str:
-    """Format a table cell value; wrap in red if highlight=True."""
+def latex_cell(val: str, highlight_red: bool, is_max: bool) -> str:
+    """Format a table cell value.
+    - is_max=True and highlight_red=True  → red + bold + underline
+    - is_max=True and highlight_red=False → bold + underline
+    - highlight_red=True only             → red (beats ReBRAC but not row max)
+    """
     safe = val.replace("±", r"$\pm$")   # convert ± to math mode
-    if highlight:
+    if is_max and highlight_red:
+        return r"\textcolor{red}{\textbf{\underline{" + safe + r"}}}"
+    elif is_max:
+        return r"\textbf{\underline{" + safe + r"}}"
+    elif highlight_red:
         return r"\textcolor{red}{" + safe + r"}"
     return safe
 
@@ -548,7 +568,7 @@ def write_latex(domain_data: list[tuple[str, list[dict]]]):
     lines.append(r"")
     lines.append(r"\begin{table*}[t]")
     lines.append(r"  \centering")
-    lines.append(r"  \caption{Offline RL benchmark results (Last Scores).}")
+    lines.append(r"  \caption{Offline RL benchmark results (Seed 1, 42, 80, 100).}")
     lines.append(r"  \label{tab:offline_results}")
     lines.append(r"  \resizebox{\textwidth}{!}{")
     lines.append(f"  \\begin{{tabular}}{{{col_spec}}}")
@@ -563,16 +583,27 @@ def write_latex(domain_data: list[tuple[str, list[dict]]]):
         for row in rows:
             rebrac_mean = mean_only(row.get("ReBRAC", "N/A"))
 
+            # Find the column with the maximum mean value across the entire row
+            row_max_val = None
+            row_max_col = None
+            for col in all_data_cols:
+                v = mean_only(row.get(col, "N/A"))
+                if v is not None and (row_max_val is None or v > row_max_val):
+                    row_max_val = v
+                    row_max_col = col
+
             cells = [row["Task-Name"].replace("_", r"\_")]
             for col in all_data_cols:
                 val = row.get(col, "N/A")
-                # highlight only E2ERL columns that beat ReBRAC
+                # Red highlight: E2ERL columns that beat ReBRAC
                 if col in E2ERL_COLS and rebrac_mean is not None:
                     e_mean = mean_only(val)
-                    highlight = (e_mean is not None) and (e_mean > rebrac_mean)
+                    highlight_red = (e_mean is not None) and (e_mean > rebrac_mean)
                 else:
-                    highlight = False
-                cells.append(latex_cell(val, highlight))
+                    highlight_red = False
+                # Bold + underline: the column with the row's maximum mean
+                is_max = (col == row_max_col) and (row_max_col is not None)
+                cells.append(latex_cell(val, highlight_red, is_max))
 
             lines.append("    " + " & ".join(cells) + r" \\")
 
@@ -600,11 +631,298 @@ def write_latex(domain_data: list[tuple[str, list[dict]]]):
     print(f"LaTeX saved → {OUTPUT_TEX}")
 
 
+# ---------------------------------------------------------------------------
+# 7. Single-E2ERL tables (baselines + one "E2ERL" column per table)
+#
+#    Table 2 — Maze2D + AntMaze
+#    Table 3 — Locomotion + Adroit
+#
+#    Each domain has its own β setting so they can be changed independently.
+# ---------------------------------------------------------------------------
+
+# ── Per-domain β selection ───────────────────────────────────────────────────
+DOMAIN_E2ERL_BETA = {
+    "Locomotion": "0.001",
+    "Maze2D":     "0.001",
+    "AntMaze":    "0.001",
+    "Adroit":     "0.001",
+}
+
+SINGLE_E2ERL_COL = "E2ERL"   # display name — no beta shown in header
+
+
+def _e2erl_key_for_domain(domain: str) -> str:
+    """Return the key used in the e2erl dict for a given domain's chosen β."""
+    return f"E2ERL(β={DOMAIN_E2ERL_BETA[domain]})"
+
+
+def build_single_e2erl_rows(
+    e2erl: dict,
+    domains: list[str],
+) -> list[tuple[str, list[dict]]]:
+    """Build rows for a table that shows baselines + one E2ERL column.
+    The E2ERL value for each domain is taken from its configured β.
+    """
+    result = []
+    for domain in domains:
+        key = _e2erl_key_for_domain(domain)
+        domain_rows = []
+        for env in DOMAIN_ENVS[domain]:
+            row = {"Task-Name": env}
+            for col in BASELINE_COLS:
+                row[col] = BASELINES.get(env, {}).get(col, "N/A")
+            e_val = e2erl.get(env, {}).get(key, "N/A")
+            row[SINGLE_E2ERL_COL] = e_val.strip() if e_val else "N/A"
+            domain_rows.append(row)
+        result.append((domain, domain_rows))
+    return result
+
+
+def write_single_e2erl_csv(
+    domain_data: list[tuple[str, list[dict]]],
+    output_path: str,
+):
+    all_cols = ["Task-Name"] + BASELINE_COLS + [SINGLE_E2ERL_COL]
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=all_cols)
+        writer.writeheader()
+        for domain, rows in domain_data:
+            for row in rows:
+                writer.writerow(row)
+            avg = domain_avg(rows, BASELINE_COLS + [SINGLE_E2ERL_COL])
+            avg_row = {"Task-Name": f"[{domain} average]"}
+            avg_row.update(avg)
+            writer.writerow(avg_row)
+            writer.writerow({c: "" for c in all_cols})
+    print(f"CSV saved  → {output_path}")
+
+
+def write_single_e2erl_latex(
+    domain_data: list[tuple[str, list[dict]]],
+    output_path: str,
+    caption: str,
+    label: str,
+):
+    all_data_cols = BASELINE_COLS + [SINGLE_E2ERL_COL]
+    col_spec = "l" + "c" * len(all_data_cols)
+    header_cells = ["Task-Name"] + [c.replace("%", r"\%") for c in all_data_cols]
+
+    lines = []
+    lines.append(r"\documentclass[a4paper]{article}")
+    lines.append(r"\usepackage{booktabs}")
+    lines.append(r"\usepackage{xcolor}")
+    lines.append(r"\usepackage{graphicx}")
+    lines.append(r"\usepackage{geometry}")
+    lines.append(r"\geometry{margin=1cm}")
+    lines.append(r"\begin{document}")
+    lines.append(r"")
+    lines.append(r"\begin{table*}[t]")
+    lines.append(r"  \centering")
+    lines.append(f"  \\caption{{{caption}}}")
+    lines.append(f"  \\label{{{label}}}")
+    lines.append(r"  \resizebox{\textwidth}{!}{")
+    lines.append(f"  \\begin{{tabular}}{{{col_spec}}}")
+    lines.append(r"    \toprule")
+    lines.append("    " + " & ".join(header_cells) + r" \\")
+    lines.append(r"    \midrule")
+
+    for domain, rows in domain_data:
+        lines.append(f"    % ── {domain} ──")
+        for row in rows:
+            rebrac_mean = mean_only(row.get("ReBRAC", "N/A"))
+
+            # Max computed ONLY over columns present in this table
+            row_max_val = None
+            row_max_col = None
+            for col in all_data_cols:
+                v = mean_only(row.get(col, "N/A"))
+                if v is not None and (row_max_val is None or v > row_max_val):
+                    row_max_val = v
+                    row_max_col = col
+
+            cells = [row["Task-Name"].replace("_", r"\_")]
+            for col in all_data_cols:
+                val = row.get(col, "N/A")
+                if col == SINGLE_E2ERL_COL and rebrac_mean is not None:
+                    e_mean = mean_only(val)
+                    highlight_red = (e_mean is not None) and (e_mean > rebrac_mean)
+                else:
+                    highlight_red = False
+                is_max = (col == row_max_col) and (row_max_col is not None)
+                cells.append(latex_cell(val, highlight_red, is_max))
+            lines.append("    " + " & ".join(cells) + r" \\")
+
+        avg = domain_avg(rows, all_data_cols)
+        avg_cells = [f"\\textit{{{domain} avg}}"]
+        for col in all_data_cols:
+            avg_cells.append(avg.get(col, "N/A"))
+        lines.append(r"    \midrule")
+        lines.append("    " + " & ".join(avg_cells) + r" \\")
+        lines.append(r"    \midrule")
+
+    lines[-1] = r"    \bottomrule"
+    lines.append(r"  \end{tabular}")
+    lines.append(r"  }")
+    lines.append(r"\end{table*}")
+    lines.append(r"")
+    lines.append(r"\end{document}")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"LaTeX saved → {output_path}")
+
+
+# ---------------------------------------------------------------------------
+# 8. ReBRAC vs all-β table (Table 4)
+#    Columns: Task-Name | ReBRAC | E2ERL(β=0.001) | ... | E2ERL(β=0.5)
+#    All four domains included.
+# ---------------------------------------------------------------------------
+
+def build_rebrac_vs_beta_rows(e2erl: dict) -> list[tuple[str, list[dict]]]:
+    result = []
+    for domain, envs in DOMAIN_ENVS.items():
+        domain_rows = []
+        for env in envs:
+            row = {"Task-Name": env}
+            row["ReBRAC"] = BASELINES.get(env, {}).get("ReBRAC", "N/A")
+            e_data = e2erl.get(env, {})
+            for col in E2ERL_COLS:
+                row[col] = e_data.get(col, "N/A")
+            domain_rows.append(row)
+        result.append((domain, domain_rows))
+    return result
+
+
+def write_rebrac_vs_beta_csv(domain_data: list[tuple[str, list[dict]]]):
+    output_path = os.path.join(SCRIPT_DIR, "outputs", "rebrac_vs_beta_table.csv")
+    all_cols = ["Task-Name", "ReBRAC"] + E2ERL_COLS
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=all_cols)
+        writer.writeheader()
+        for domain, rows in domain_data:
+            for row in rows:
+                writer.writerow(row)
+            avg = domain_avg(rows, ["ReBRAC"] + E2ERL_COLS)
+            avg_row = {"Task-Name": f"[{domain} average]"}
+            avg_row.update(avg)
+            writer.writerow(avg_row)
+            writer.writerow({c: "" for c in all_cols})
+    print(f"CSV saved  → {output_path}")
+
+
+def write_rebrac_vs_beta_latex(domain_data: list[tuple[str, list[dict]]]):
+    output_path = os.path.join(SCRIPT_DIR, "outputs", "rebrac_vs_beta_table.tex")
+    all_data_cols = ["ReBRAC"] + E2ERL_COLS
+    col_spec = "l" + "c" * len(all_data_cols)
+    header_cells = ["Task-Name"] + [c.replace("β", r"$\beta$").replace("%", r"\%")
+                                    for c in all_data_cols]
+
+    lines = []
+    lines.append(r"\documentclass[a4paper]{article}")
+    lines.append(r"\usepackage{booktabs}")
+    lines.append(r"\usepackage{xcolor}")
+    lines.append(r"\usepackage{graphicx}")
+    lines.append(r"\usepackage{geometry}")
+    lines.append(r"\geometry{margin=1cm}")
+    lines.append(r"\begin{document}")
+    lines.append(r"")
+    lines.append(r"\begin{table*}[t]")
+    lines.append(r"  \centering")
+    lines.append(r"  \caption{ReBRAC vs E2ERL across all $\beta$ values (Seed 1, 42, 80, 100).}")
+    lines.append(r"  \label{tab:rebrac_vs_beta}")
+    lines.append(r"  \resizebox{\textwidth}{!}{")
+    lines.append(f"  \\begin{{tabular}}{{{col_spec}}}")
+    lines.append(r"    \toprule")
+    lines.append("    " + " & ".join(header_cells) + r" \\")
+    lines.append(r"    \midrule")
+
+    for domain, rows in domain_data:
+        lines.append(f"    % ── {domain} ──")
+        for row in rows:
+            rebrac_mean = mean_only(row.get("ReBRAC", "N/A"))
+
+            # Max over ReBRAC + all E2ERL betas
+            row_max_val = None
+            row_max_col = None
+            for col in all_data_cols:
+                v = mean_only(row.get(col, "N/A"))
+                if v is not None and (row_max_val is None or v > row_max_val):
+                    row_max_val = v
+                    row_max_col = col
+
+            cells = [row["Task-Name"].replace("_", r"\_")]
+            for col in all_data_cols:
+                val = row.get(col, "N/A")
+                if col in E2ERL_COLS and rebrac_mean is not None:
+                    e_mean = mean_only(val)
+                    highlight_red = (e_mean is not None) and (e_mean > rebrac_mean)
+                else:
+                    highlight_red = False
+                is_max = (col == row_max_col) and (row_max_col is not None)
+                cells.append(latex_cell(val, highlight_red, is_max))
+            lines.append("    " + " & ".join(cells) + r" \\")
+
+        avg = domain_avg(rows, all_data_cols)
+        avg_cells = [f"\\textit{{{domain} avg}}"]
+        for col in all_data_cols:
+            avg_cells.append(avg.get(col, "N/A"))
+        lines.append(r"    \midrule")
+        lines.append("    " + " & ".join(avg_cells) + r" \\")
+        lines.append(r"    \midrule")
+
+    lines[-1] = r"    \bottomrule"
+    lines.append(r"  \end{tabular}")
+    lines.append(r"  }")
+    lines.append(r"\end{table*}")
+    lines.append(r"")
+    lines.append(r"\end{document}")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"LaTeX saved → {output_path}")
+
+
+# ---------------------------------------------------------------------------
+# 9. Main
+# ---------------------------------------------------------------------------
+
 def main():
-    e2erl       = load_e2erl(E2ERL_CSV)
+    e2erl = load_e2erl(E2ERL_CSV)
+
+    # Table 1 — full table (all domains, all baselines + all E2ERL betas)
     domain_data = build_rows(e2erl)
     write_csv(domain_data)
     write_latex(domain_data)
+
+    # Table 2 — Maze2D + AntMaze (baselines + single E2ERL)
+    t2_data = build_single_e2erl_rows(e2erl, ["Maze2D", "AntMaze"])
+    write_single_e2erl_csv(t2_data, os.path.join(SCRIPT_DIR, "outputs", "maze_antmaze_table.csv"))
+    write_single_e2erl_latex(
+        t2_data,
+        os.path.join(SCRIPT_DIR, "outputs", "maze_antmaze_table.tex"),
+        caption="Offline RL benchmark results --- Maze2D \\& AntMaze (Seed 1, 42, 80, 100).",
+        label="tab:maze_antmaze_results",
+    )
+
+    # Table 3 — Locomotion + Adroit (baselines + single E2ERL)
+    t3_data = build_single_e2erl_rows(e2erl, ["Locomotion", "Adroit"])
+    write_single_e2erl_csv(t3_data, os.path.join(SCRIPT_DIR, "outputs", "loco_adroit_table.csv"))
+    write_single_e2erl_latex(
+        t3_data,
+        os.path.join(SCRIPT_DIR, "outputs", "loco_adroit_table.tex"),
+        caption="Offline RL benchmark results --- Locomotion \\& Adroit (Seed 1, 42, 80, 100).",
+        label="tab:loco_adroit_results",
+    )
+
+    # Table 4 — all domains, ReBRAC vs all E2ERL betas
+    t4_data = build_rebrac_vs_beta_rows(e2erl)
+    write_rebrac_vs_beta_csv(t4_data)
+    write_rebrac_vs_beta_latex(t4_data)
+
 
 if __name__ == "__main__":
     main()

@@ -23,12 +23,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import matplotlib
+import matplotlib.ticker
 matplotlib.use("Agg")
 import matplotlib.patches as mpatches
+import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 
 
-A4_W, A4_H = 8.27, 2.8
+A4_W, A4_H = 6.1, 2.2
 
 _UMAZE_CFG = {
     "maze_array": [
@@ -72,33 +74,37 @@ def _draw_maze_panel(ax, obs: np.ndarray, s_anchor: np.ndarray, radius: float) -
     ax.scatter(obs[::step, 0], obs[::step, 1],
                s=1, c="steelblue", alpha=0.25, linewidths=0, zorder=1)
 
+    ax.set_xlim(0,4)
+    ax.set_ylim(0,4)
+
+    ticks = [0, 1, 2, 3, 4]
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
+    ax.set_xticklabels([str(t) for t in ticks])
+    ax.set_yticklabels([str(t) for t in ticks])
+    
     _draw_maze_walls(ax, cfg)
 
     # radius circle
     ax.add_patch(mpatches.Circle(
         (s_anchor[0], s_anchor[1]), radius,
-        fill=False, edgecolor="red", linewidth=1.5, linestyle="--", zorder=4,
+        fill=False, edgecolor="red", linewidth=3, linestyle="--", zorder=4,
     ))
 
-    ax.scatter(s_anchor[0], s_anchor[1], s=10, marker="*", c="red", zorder=5,
+    ax.scatter(s_anchor[0], s_anchor[1], s=20, marker="*", c="red", zorder=5,
                label=(
-                   rf"anchor  $s$=[{s_anchor[0]:.2f}, {s_anchor[1]:.2f},"
-                   rf" {s_anchor[2]:.2f}, {s_anchor[3]:.2f}]"
+                   rf"anchor"
                ))
 
-    ax.set_xlim(p_min, p_xmax)
-    ax.set_ylim(p_min, p_ymax)
     ax.set_aspect("equal")
     ax.grid(False)
     ax.set_facecolor("white")
-    ax.set_xticks([0, 1, 2, 3, 4])
-    ax.set_yticks([0, 1, 2, 3, 4])
-    ax.tick_params(axis='both', which='major', labelsize=4, length=2, width=0.4)
-    ax.set_xlabel("x", fontsize=5)
-    ax.set_ylabel("y", fontsize=5)
-    ax.set_title("Anchor in UMaze", fontsize=6, fontweight="bold")
-    ax.legend(loc="upper left", fontsize=3, framealpha=0.6, markerscale=1.0,
-              handlelength=0.5, handletextpad=0.4, borderpad=0.2, labelspacing=0.2)
+    ax.tick_params(axis='both', which='major', labelsize=10, length=1.5, width=0.3)
+    ax.set_xlabel("x", fontsize=11)
+    ax.set_ylabel("y", fontsize=11)
+    # ax.set_title("Anchor in UMaze", fontsize=5, fontweight="bold")
+    ax.legend(loc="upper left", fontsize=8, framealpha=0.6, markerscale=2,
+              handlelength=1, handletextpad=0.4, borderpad=0.2, labelspacing=0.2)
 
 
 # Model (same architecture as rebrac.py)
@@ -262,7 +268,6 @@ def _draw_panel(ax, q_2d, grad_2d, ax_1d, ay_1d,
         vmin=vmin, vmax=vmax, zorder=1,
     )
 
-    # Normalised gradient field
     iy_idx = np.arange(0, q_2d.shape[0], stride)
     ix_idx = np.arange(0, q_2d.shape[1], stride)
     iyy, ixx = np.meshgrid(iy_idx, ix_idx, indexing="ij")
@@ -283,7 +288,7 @@ def _draw_panel(ax, q_2d, grad_2d, ax_1d, ay_1d,
     if len(support_actions) > 0:
         ax.scatter(
             support_actions[:, 0], support_actions[:, 1],
-            c="red", s=3, linewidths=0, zorder=5,
+            c="red", s=12, linewidths=0, zorder=5,
             label=f"data support (n={len(support_actions)}, r={radius})",
         )
         ax.legend(loc="upper left", fontsize=3,
@@ -295,11 +300,25 @@ def _draw_panel(ax, q_2d, grad_2d, ax_1d, ay_1d,
 
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
-    ax.set_xlabel(r"$a_x$", fontsize=5)
-    ax.set_ylabel(r"$a_y$", fontsize=5)
-    ax.tick_params(axis='both', which='major', labelsize=4, length=2, width=0.4)
-    ax.set_title(rf"E2E$\beta$ = {beta_val}", fontsize=6, fontweight="bold")
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=4))
+
+    ax.set_xlabel(r"$a_x$", fontsize=11)
+    ax.set_ylabel(r"$a_y$", fontsize=11)
+    ax.tick_params(axis='both', which='major', labelsize=10, length=1.5, width=0.3)
+    # ax.set_title(rf"E2E$\beta$ = {beta_val}", fontsize=5, fontweight="bold")
     return im
+
+
+def _save_fig(fig, path, dpi=150):
+    out_dir = os.path.dirname(os.path.abspath(path))
+    os.makedirs(out_dir, exist_ok=True)
+    fig.savefig(path, dpi=dpi)
+    print(f"[Output PNG] {path}")
+    pdf_path = os.path.splitext(path)[0] + ".pdf"
+    fig.savefig(pdf_path)
+    print(f"[Output PDF] {pdf_path}")
+    plt.close(fig)
 
 
 def make_figure(q0, g0, q1, g1, q2, g2, ax_1d, ay_1d,
@@ -313,45 +332,56 @@ def make_figure(q0, g0, q1, g1, q2, g2, ax_1d, ay_1d,
     print(f"[Q range] beta={beta1_val}: [{vmin1:.2f}, {vmax1:.2f}]")
     print(f"[Q range] beta={beta2_val}: [{vmin2:.2f}, {vmax2:.2f}]")
 
-    fig, axes = plt.subplots(1, 4, figsize=(A4_W, A4_H),
-                             gridspec_kw={"width_ratios": [1.1, 1.3, 1.3, 1.3]})
+    base = os.path.splitext(output_path)[0]
 
-    _draw_maze_panel(axes[0], obs if obs is not None else np.zeros((0, 4)),
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    # All four panels share the same figsize and subplots_adjust so the map
+    # axes occupy the same position in every file.
+    # make_axes_locatable ties the colorbar height exactly to the rendered map.
+    FIGSIZE = (4.5, 3.5)
+    ADJ = dict(left=0.18, right=0.85, top=0.95, bottom=0.18)
+
+    # --- Panel 0: Anchor in UMaze ---
+    # Add an invisible colorbar axes so the map is sized the same as Q panels.
+    fig0, ax0 = plt.subplots(1, 1, figsize=FIGSIZE)
+    fig0.subplots_adjust(**ADJ)
+    _draw_maze_panel(ax0, obs if obs is not None else np.zeros((0, 4)),
                      s_anchor, radius)
+    for spine in ax0.spines.values():
+        spine.set_linewidth(0.4)
+    divider0 = make_axes_locatable(ax0)
+    cax0 = divider0.append_axes("right", size="5%", pad=0.06)
+    cax0.set_axis_off()
+    _save_fig(fig0, f"{base}_panel0_anchor.png")
 
-    im0 = _draw_panel(axes[1], q0, g0, ax_1d, ay_1d,
-                      support_actions, beta0_val, vmin0, vmax0, radius)
-    im1 = _draw_panel(axes[2], q1, g1, ax_1d, ay_1d,
-                      support_actions, beta1_val, vmin1, vmax1, radius)
-    im2 = _draw_panel(axes[3], q2, g2, ax_1d, ay_1d,
-                      support_actions, beta2_val, vmin2, vmax2, radius)
+    # --- Panels 1-3: Q landscape (with colorbar) ---
+    for q, g, beta_val, vmin, vmax, tag in [
+        (q0, g0, beta0_val, vmin0, vmax0, "beta0"),
+        (q1, g1, beta1_val, vmin1, vmax1, "beta0001"),
+        (q2, g2, beta2_val, vmin2, vmax2, "beta0005"),
+    ]:
+        fig_q, ax_q = plt.subplots(1, 1, figsize=FIGSIZE)
+        fig_q.subplots_adjust(**ADJ)
 
-    for im, ax_ in zip([im0, im1, im2], axes[1:]):
-        cb = fig.colorbar(im, ax=ax_, fraction=0.046, pad=0.02)
-        cb.set_label("Q value", fontsize=5)
-        cb.ax.tick_params(labelsize=4, length=2, width=0.4)
+        im = _draw_panel(ax_q, q, g, ax_1d, ay_1d,
+                         support_actions, beta_val, vmin, vmax, radius)
+        for spine in ax_q.spines.values():
+            spine.set_linewidth(0.4)
+
+        divider = make_axes_locatable(ax_q)
+        cax_q = divider.append_axes("right", size="5%", pad=0.06)
+
+        cb = fig_q.colorbar(im, cax=cax_q)
+        cb.set_label("Q value", fontsize=11)
+        ticks = [float(t) for t in np.linspace(vmin, vmax, 5)]
+        cb.set_ticks(ticks)
+        cb.ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.2f'))
+        cb.ax.tick_params(labelsize=10, length=1.5, width=0.3)
         for spine in cb.ax.spines.values():
             spine.set_linewidth(0.4)
 
-    for ax_ in axes:
-        for spine in ax_.spines.values():
-            spine.set_linewidth(0.4)
-
-    plt.subplots_adjust(left=0.05, right=0.93, top=0.93, bottom=0.10, wspace=0.7)
-
-    fig.set_size_inches(A4_W, A4_H)
-
-    out_dir = os.path.dirname(os.path.abspath(output_path))
-    os.makedirs(out_dir, exist_ok=True)
-
-    plt.savefig(output_path, dpi=150)
-    print(f"[Output PNG] {output_path}")
-
-    pdf_path = os.path.splitext(output_path)[0] + ".pdf"
-    plt.savefig(pdf_path)
-    print(f"[Output PDF] {pdf_path}")
-
-    plt.close(fig)
+        _save_fig(fig_q, f"{base}_panel_{tag}.png")
 
 
 # CLI
