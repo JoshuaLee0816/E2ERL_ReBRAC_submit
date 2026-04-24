@@ -1,0 +1,68 @@
+\documentclass[a4paper]{article}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1cm}
+\begin{document}
+
+\begin{table*}[t]
+  \centering
+  \caption{ReBRAC vs E2ERL across all $\beta$ values (Seed 1, 42, 80, 100).}
+  \label{tab:rebrac_vs_beta}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lccccccccc}
+    \toprule
+    Task-Name & ReBRAC & E2ERL($\beta$=0.001) & E2ERL($\beta$=0.0025) & E2ERL($\beta$=0.005) & E2ERL($\beta$=0.0075) & E2ERL($\beta$=0.01) & E2ERL($\beta$=0.05) & E2ERL($\beta$=0.1) & E2ERL($\beta$=0.5) \\
+    \midrule
+    % ── Locomotion ──
+    halfcheetah-medium-v2 & 64.04 $\pm$ 0.68 & \textcolor{red}{65.61 $\pm$ 0.81} & \textcolor{red}{66.22 $\pm$ 1.33} & \textcolor{red}{65.84 $\pm$ 0.77} & N/A & \textcolor{red}{65.09 $\pm$ 0.87} & N/A & \textcolor{red}{\textbf{\underline{67.50 $\pm$ 1.15}}} & \textcolor{red}{65.37 $\pm$ 1.59} \\
+    halfcheetah-medium-replay-v2 & \textbf{\underline{51.18 $\pm$ 0.31}} & 50.38 $\pm$ 0.99 & 50.61 $\pm$ 0.57 & 50.69 $\pm$ 0.57 & N/A & 50.21 $\pm$ 1.31 & N/A & 51.03 $\pm$ 0.50 & 50.76 $\pm$ 0.80 \\
+    halfcheetah-medium-expert-v2 & 103.80 $\pm$ 2.95 & \textcolor{red}{104.05 $\pm$ 2.20} & \textcolor{red}{\textbf{\underline{106.87 $\pm$ 2.12}}} & \textcolor{red}{105.96 $\pm$ 0.82} & N/A & 101.78 $\pm$ 5.06 & N/A & \textcolor{red}{104.98 $\pm$ 1.08} & \textcolor{red}{106.46 $\pm$ 1.49} \\
+    hopper-medium-v2 & 102.29 $\pm$ 0.17 & 102.09 $\pm$ 0.64 & 102.25 $\pm$ 0.31 & \textcolor{red}{102.45 $\pm$ 0.28} & N/A & \textcolor{red}{\textbf{\underline{102.76 $\pm$ 0.16}}} & N/A & \textcolor{red}{102.44 $\pm$ 0.03} & 98.20 $\pm$ 7.41 \\
+    hopper-medium-replay-v2 & 94.98 $\pm$ 6.53 & 93.08 $\pm$ 14.82 & \textcolor{red}{96.07 $\pm$ 7.28} & \textcolor{red}{100.92 $\pm$ 0.84} & N/A & \textcolor{red}{\textbf{\underline{101.60 $\pm$ 0.31}}} & N/A & \textcolor{red}{96.20 $\pm$ 9.46} & 92.49 $\pm$ 15.78 \\
+    hopper-medium-expert-v2 & \textbf{\underline{109.45 $\pm$ 2.34}} & 105.20 $\pm$ 9.90 & 106.01 $\pm$ 8.79 & 107.20 $\pm$ 5.00 & N/A & 109.11 $\pm$ 4.31 & N/A & 108.90 $\pm$ 2.29 & 105.90 $\pm$ 7.44 \\
+    walker2d-medium-v2 & 85.82 $\pm$ 0.77 & 85.54 $\pm$ 2.99 & 84.36 $\pm$ 2.43 & \textcolor{red}{86.10 $\pm$ 0.45} & N/A & 85.76 $\pm$ 0.00 & N/A & \textcolor{red}{\textbf{\underline{86.24 $\pm$ 1.22}}} & 85.29 $\pm$ 0.48 \\
+    walker2d-medium-replay-v2 & 84.25 $\pm$ 2.25 & \textcolor{red}{\textbf{\underline{85.63 $\pm$ 3.33}}} & 80.96 $\pm$ 3.39 & \textcolor{red}{84.52 $\pm$ 4.86} & N/A & 81.64 $\pm$ 9.63 & N/A & 82.74 $\pm$ 7.47 & 77.49 $\pm$ 10.02 \\
+    walker2d-medium-expert-v2 & 111.86 $\pm$ 0.43 & 111.69 $\pm$ 0.36 & 111.83 $\pm$ 0.37 & 111.67 $\pm$ 0.35 & N/A & 111.65 $\pm$ 0.45 & N/A & 111.83 $\pm$ 0.56 & \textcolor{red}{\textbf{\underline{112.02 $\pm$ 0.45}}} \\
+    \midrule
+    \textit{Locomotion avg} & 89.74 & 89.25 & 89.46 & 90.59 & N/A & 89.96 & N/A & 90.21 & 88.22 \\
+    \midrule
+    % ── Maze2D ──
+    maze2d-umaze-v1 & 106.87 $\pm$ 22.16 & \textcolor{red}{145.21 $\pm$ 0.00} & 74.88 $\pm$ 28.12 & \textcolor{red}{110.05 $\pm$ 25.91} & N/A & \textcolor{red}{110.88 $\pm$ 24.67} & N/A & 96.00 $\pm$ 26.57 & \textcolor{red}{\textbf{\underline{151.33 $\pm$ 4.27}}} \\
+    maze2d-medium-v1 & \textbf{\underline{105.11 $\pm$ 31.67}} & 94.46 $\pm$ 39.01 & 91.85 $\pm$ 52.96 & 96.93 $\pm$ 2.24 & N/A & 87.26 $\pm$ 39.34 & N/A & 48.56 $\pm$ 38.47 & 33.63 $\pm$ 28.71 \\
+    maze2d-large-v1 & 78.33 $\pm$ 61.77 & \textcolor{red}{98.51 $\pm$ 72.44} & 43.44 $\pm$ 62.38 & 58.24 $\pm$ 61.91 & N/A & \textcolor{red}{\textbf{\underline{109.27 $\pm$ 54.33}}} & N/A & 66.72 $\pm$ 11.38 & 66.18 $\pm$ 22.82 \\
+    \midrule
+    \textit{Maze2D avg} & 96.77 & 112.73 & 70.06 & 88.41 & N/A & 102.47 & N/A & 70.43 & 83.71 \\
+    \midrule
+    % ── AntMaze ──
+    antmaze-umaze-v2 & 97.75 $\pm$ 1.48 & 97.00 $\pm$ 1.63 & 97.25 $\pm$ 1.71 & 96.75 $\pm$ 1.26 & N/A & 97.00 $\pm$ 2.45 & N/A & \textcolor{red}{\textbf{\underline{100.00 $\pm$ 0.00}}} & 30.00 $\pm$ 26.46 \\
+    antmaze-umaze-diverse-v2 & 83.50 $\pm$ 7.02 & \textcolor{red}{89.75 $\pm$ 6.85} & \textcolor{red}{\textbf{\underline{91.75 $\pm$ 5.19}}} & \textcolor{red}{90.50 $\pm$ 1.73} & N/A & 80.25 $\pm$ 12.69 & N/A & 46.67 $\pm$ 50.33 & 66.67 $\pm$ 35.12 \\
+    antmaze-medium-play-v2 & 89.50 $\pm$ 3.35 & 81.00 $\pm$ 2.94 & 88.25 $\pm$ 3.40 & 84.50 $\pm$ 7.19 & N/A & 83.50 $\pm$ 8.06 & N/A & \textcolor{red}{\textbf{\underline{93.33 $\pm$ 5.77}}} & 0.00 $\pm$ 0.00 \\
+    antmaze-medium-diverse-v2 & 83.50 $\pm$ 8.20 & \textcolor{red}{85.50 $\pm$ 2.38} & 80.25 $\pm$ 8.54 & \textcolor{red}{\textbf{\underline{85.75 $\pm$ 1.50}}} & N/A & 81.75 $\pm$ 6.55 & N/A & 76.67 $\pm$ 5.77 & 0.00 $\pm$ 0.00 \\
+    antmaze-large-play-v2 & 52.25 $\pm$ 29.01 & \textcolor{red}{71.00 $\pm$ 6.27} & \textcolor{red}{\textbf{\underline{74.00 $\pm$ 8.16}}} & \textcolor{red}{66.00 $\pm$ 4.24} & N/A & 51.00 $\pm$ 32.85 & N/A & 50.00 $\pm$ 10.00 & 0.00 $\pm$ 0.00 \\
+    antmaze-large-diverse-v2 & 64.00 $\pm$ 5.43 & \textcolor{red}{\textbf{\underline{74.00 $\pm$ 4.97}}} & \textcolor{red}{64.25 $\pm$ 13.00} & \textcolor{red}{67.25 $\pm$ 10.37} & N/A & 51.75 $\pm$ 32.18 & N/A & 33.33 $\pm$ 28.87 & N/A \\
+    \midrule
+    \textit{AntMaze avg} & 78.42 & 83.04 & 82.62 & 81.79 & N/A & 74.21 & N/A & 66.67 & 19.33 \\
+    \midrule
+    % ── Adroit ──
+    pen-human-v1 & 103.16 $\pm$ 8.49 & \textcolor{red}{105.20 $\pm$ 8.75} & 95.77 $\pm$ 9.37 & 82.07 $\pm$ 24.32 & 96.17 $\pm$ 17.79 & \textcolor{red}{107.87 $\pm$ 16.65} & \textcolor{red}{\textbf{\underline{113.22 $\pm$ 5.62}}} & \textcolor{red}{106.49 $\pm$ 18.55} & N/A \\
+    pen-cloned-v1 & 102.79 $\pm$ 7.84 & 97.84 $\pm$ 0.57 & 89.80 $\pm$ 18.39 & \textcolor{red}{103.53 $\pm$ 23.50} & 97.38 $\pm$ 8.02 & 100.10 $\pm$ 14.90 & 100.98 $\pm$ 9.08 & \textcolor{red}{\textbf{\underline{114.78 $\pm$ 15.60}}} & N/A \\
+    pen-expert-v1 & 152.16 $\pm$ 6.33 & 151.06 $\pm$ 10.72 & \textcolor{red}{152.79 $\pm$ 5.03} & 146.06 $\pm$ 11.50 & 146.90 $\pm$ 12.14 & \textcolor{red}{\textbf{\underline{153.75 $\pm$ 6.40}}} & 149.32 $\pm$ 5.79 & 149.95 $\pm$ 4.23 & N/A \\
+    door-human-v1 & -0.10 $\pm$ 0.01 & -0.12 $\pm$ 0.11 & \textcolor{red}{-0.08 $\pm$ 0.04} & -0.10 $\pm$ 0.03 & -0.11 $\pm$ 0.07 & \textcolor{red}{-0.08 $\pm$ 0.07} & \textcolor{red}{\textbf{\underline{-0.04 $\pm$ 0.06}}} & -0.10 $\pm$ 0.12 & N/A \\
+    door-cloned-v1 & 0.06 $\pm$ 0.05 & 0.01 $\pm$ 0.07 & 0.03 $\pm$ 0.06 & \textcolor{red}{\textbf{\underline{0.24 $\pm$ 0.33}}} & \textcolor{red}{0.11 $\pm$ 0.03} & 0.04 $\pm$ 0.05 & \textcolor{red}{0.07 $\pm$ 0.03} & -0.01 $\pm$ 0.14 & N/A \\
+    door-expert-v1 & 106.37 $\pm$ 0.29 & 105.13 $\pm$ 2.20 & 104.63 $\pm$ 2.19 & 106.20 $\pm$ 0.15 & 103.09 $\pm$ 4.07 & 103.83 $\pm$ 2.84 & 102.33 $\pm$ 6.24 & \textcolor{red}{\textbf{\underline{106.50 $\pm$ 0.09}}} & N/A \\
+    hammer-human-v1 & 0.24 $\pm$ 0.24 & 0.16 $\pm$ 0.16 & 0.17 $\pm$ 0.04 & 0.12 $\pm$ 0.07 & 0.18 $\pm$ 0.26 & 0.13 $\pm$ 0.18 & 0.14 $\pm$ 0.09 & \textcolor{red}{\textbf{\underline{1.55 $\pm$ 1.91}}} & N/A \\
+    hammer-cloned-v1 & 5.00 $\pm$ 3.75 & 3.81 $\pm$ 1.47 & \textcolor{red}{5.94 $\pm$ 5.60} & \textcolor{red}{\textbf{\underline{12.32 $\pm$ 15.33}}} & 4.94 $\pm$ 2.93 & \textcolor{red}{8.82 $\pm$ 9.90} & 4.27 $\pm$ 5.22 & 4.42 $\pm$ 3.59 & N/A \\
+    hammer-expert-v1 & 133.62 $\pm$ 0.27 & 133.58 $\pm$ 0.93 & \textcolor{red}{\textbf{\underline{134.14 $\pm$ 0.08}}} & 131.36 $\pm$ 4.98 & \textcolor{red}{133.86 $\pm$ 0.55} & \textcolor{red}{133.76 $\pm$ 0.63} & 133.24 $\pm$ 0.93 & \textcolor{red}{133.92 $\pm$ 0.31} & N/A \\
+    relocate-human-v1 & \textbf{\underline{0.16 $\pm$ 0.30}} & -0.02 $\pm$ 0.01 & 0.00 $\pm$ 0.02 & 0.00 $\pm$ 0.01 & -0.01 $\pm$ 0.01 & -0.01 $\pm$ 0.01 & 0.15 $\pm$ 0.32 & -0.01 $\pm$ 0.04 & N/A \\
+    relocate-cloned-v1 & \textbf{\underline{1.66 $\pm$ 2.59}} & 0.76 $\pm$ 1.63 & 1.56 $\pm$ 1.04 & 1.37 $\pm$ 2.26 & 0.27 $\pm$ 0.49 & 0.91 $\pm$ 1.21 & 0.54 $\pm$ 0.62 & 0.39 $\pm$ 0.52 & N/A \\
+    relocate-expert-v1 & 107.52 $\pm$ 2.28 & 105.34 $\pm$ 5.23 & \textcolor{red}{\textbf{\underline{110.22 $\pm$ 0.91}}} & \textcolor{red}{109.68 $\pm$ 1.33} & \textcolor{red}{108.30 $\pm$ 2.63} & \textcolor{red}{107.57 $\pm$ 2.68} & 104.79 $\pm$ 2.73 & 106.46 $\pm$ 2.15 & N/A \\
+    \midrule
+    \textit{Adroit avg} & 59.39 & 58.56 & 57.91 & 57.74 & 57.59 & 59.72 & 59.08 & 60.36 & N/A \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table*}
+
+\end{document}

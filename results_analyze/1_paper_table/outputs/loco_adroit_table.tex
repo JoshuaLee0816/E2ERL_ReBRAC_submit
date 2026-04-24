@@ -1,0 +1,51 @@
+\documentclass[a4paper]{article}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1cm}
+\begin{document}
+
+\begin{table*}[t]
+  \centering
+  \caption{Offline RL benchmark results --- Locomotion \& Adroit (Seed 1, 42, 80, 100).}
+  \label{tab:loco_adroit_results}
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lccccccccccc}
+    \toprule
+    Task-Name & BC & 10\%BC & TD3+BC & AWAC & CQL & IQL & ReBRAC & SAC-N & EDAC & DT & E2ERL \\
+    \midrule
+    % ── Locomotion ──
+    halfcheetah-medium-v2 & 42.40 $\pm$ 0.19 & 42.46 $\pm$ 0.70 & 48.10 $\pm$ 0.18 & 50.02 $\pm$ 0.27 & 47.04 $\pm$ 0.22 & 48.31 $\pm$ 0.22 & 64.04 $\pm$ 0.68 & \textbf{\underline{68.20 $\pm$ 1.28}} & 67.70 $\pm$ 1.04 & 42.20 $\pm$ 0.26 & \textcolor{red}{65.61 $\pm$ 0.81} \\
+    halfcheetah-medium-replay-v2 & 35.66 $\pm$ 2.33 & 23.59 $\pm$ 6.95 & 44.84 $\pm$ 0.59 & 45.13 $\pm$ 0.88 & 45.04 $\pm$ 0.27 & 44.46 $\pm$ 0.22 & 51.18 $\pm$ 0.31 & 60.70 $\pm$ 1.01 & \textbf{\underline{62.06 $\pm$ 1.10}} & 38.91 $\pm$ 0.50 & 50.38 $\pm$ 0.99 \\
+    halfcheetah-medium-expert-v2 & 55.95 $\pm$ 7.35 & 90.10 $\pm$ 2.45 & 90.78 $\pm$ 6.04 & 95.00 $\pm$ 0.61 & 95.63 $\pm$ 0.42 & 94.74 $\pm$ 0.52 & 103.80 $\pm$ 2.95 & 98.96 $\pm$ 9.31 & \textbf{\underline{104.76 $\pm$ 0.64}} & 91.55 $\pm$ 0.95 & \textcolor{red}{104.05 $\pm$ 2.20} \\
+    hopper-medium-v2 & 53.51 $\pm$ 1.76 & 55.48 $\pm$ 7.30 & 60.37 $\pm$ 3.49 & 63.02 $\pm$ 4.56 & 59.08 $\pm$ 3.77 & 67.53 $\pm$ 3.78 & \textbf{\underline{102.29 $\pm$ 0.17}} & 40.82 $\pm$ 9.91 & 101.70 $\pm$ 0.28 & 65.10 $\pm$ 1.61 & 102.09 $\pm$ 0.64 \\
+    hopper-medium-replay-v2 & 29.81 $\pm$ 2.07 & 70.42 $\pm$ 8.66 & 64.42 $\pm$ 21.52 & 98.88 $\pm$ 2.07 & 95.11 $\pm$ 5.27 & 97.43 $\pm$ 6.39 & 94.98 $\pm$ 6.53 & \textbf{\underline{100.33 $\pm$ 0.78}} & 99.66 $\pm$ 0.81 & 81.77 $\pm$ 6.87 & 93.08 $\pm$ 14.82 \\
+    hopper-medium-expert-v2 & 52.30 $\pm$ 4.01 & \textbf{\underline{111.16 $\pm$ 1.03}} & 101.17 $\pm$ 9.07 & 101.90 $\pm$ 6.22 & 99.26 $\pm$ 10.91 & 107.42 $\pm$ 7.80 & 109.45 $\pm$ 2.34 & 101.31 $\pm$ 11.63 & 105.19 $\pm$ 10.08 & 110.44 $\pm$ 0.33 & 105.20 $\pm$ 9.90 \\
+    walker2d-medium-v2 & 63.23 $\pm$ 16.24 & 67.34 $\pm$ 5.17 & 82.71 $\pm$ 4.78 & 68.52 $\pm$ 27.19 & 80.75 $\pm$ 3.28 & 80.91 $\pm$ 3.17 & 85.82 $\pm$ 0.77 & 87.47 $\pm$ 0.66 & \textbf{\underline{93.36 $\pm$ 1.38}} & 67.63 $\pm$ 2.54 & 85.54 $\pm$ 2.99 \\
+    walker2d-medium-replay-v2 & 21.80 $\pm$ 10.15 & 54.35 $\pm$ 6.34 & 85.62 $\pm$ 4.01 & 80.62 $\pm$ 3.58 & 73.09 $\pm$ 13.22 & 82.15 $\pm$ 3.03 & 84.25 $\pm$ 2.25 & 78.99 $\pm$ 0.50 & \textbf{\underline{87.10 $\pm$ 2.78}} & 59.86 $\pm$ 2.73 & \textcolor{red}{85.63 $\pm$ 3.33} \\
+    walker2d-medium-expert-v2 & 98.96 $\pm$ 15.98 & 108.70 $\pm$ 0.25 & 110.03 $\pm$ 0.36 & 111.44 $\pm$ 1.62 & 109.56 $\pm$ 0.39 & 111.72 $\pm$ 0.86 & 111.86 $\pm$ 0.43 & \textbf{\underline{114.93 $\pm$ 0.41}} & 114.75 $\pm$ 0.74 & 107.11 $\pm$ 0.96 & 111.69 $\pm$ 0.36 \\
+    \midrule
+    \textit{Locomotion avg} & 50.40 & 69.29 & 76.45 & 79.39 & 78.28 & 81.63 & 89.74 & 83.52 & 92.92 & 73.84 & 89.25 \\
+    \midrule
+    % ── Adroit ──
+    pen-human-v1 & 71.03 $\pm$ 6.26 & 26.99 $\pm$ 9.60 & -3.88 $\pm$ 0.21 & 76.65 $\pm$ 11.71 & 13.71 $\pm$ 16.98 & 78.49 $\pm$ 8.21 & 103.16 $\pm$ 8.49 & 6.86 $\pm$ 5.93 & 5.07 $\pm$ 6.16 & 67.68 $\pm$ 5.48 & \textcolor{red}{\textbf{\underline{105.20 $\pm$ 8.75}}} \\
+    pen-cloned-v1 & 51.92 $\pm$ 15.15 & 46.67 $\pm$ 14.25 & 5.13 $\pm$ 5.28 & 85.72 $\pm$ 16.92 & 1.04 $\pm$ 6.62 & 83.42 $\pm$ 8.19 & \textbf{\underline{102.79 $\pm$ 7.84}} & 31.35 $\pm$ 2.14 & 12.02 $\pm$ 1.75 & 64.43 $\pm$ 1.43 & 97.84 $\pm$ 0.57 \\
+    pen-expert-v1 & 109.65 $\pm$ 7.28 & 114.96 $\pm$ 2.96 & 122.53 $\pm$ 21.27 & \textbf{\underline{159.91 $\pm$ 1.87}} & -1.41 $\pm$ 2.34 & 128.05 $\pm$ 9.21 & 152.16 $\pm$ 6.33 & 87.11 $\pm$ 48.95 & -1.55 $\pm$ 0.81 & 116.38 $\pm$ 1.27 & 151.06 $\pm$ 10.72 \\
+    door-human-v1 & 2.34 $\pm$ 4.00 & -0.13 $\pm$ 0.07 & -0.33 $\pm$ 0.01 & 2.39 $\pm$ 2.26 & \textbf{\underline{5.53 $\pm$ 1.31}} & 3.26 $\pm$ 1.83 & -0.10 $\pm$ 0.01 & -0.38 $\pm$ 0.00 & -0.12 $\pm$ 0.13 & 4.44 $\pm$ 0.87 & -0.12 $\pm$ 0.11 \\
+    door-cloned-v1 & -0.09 $\pm$ 0.03 & 0.29 $\pm$ 0.59 & -0.34 $\pm$ 0.01 & -0.01 $\pm$ 0.01 & -0.33 $\pm$ 0.01 & 3.07 $\pm$ 1.75 & 0.06 $\pm$ 0.05 & -0.33 $\pm$ 0.00 & 2.66 $\pm$ 2.31 & \textbf{\underline{7.64 $\pm$ 3.26}} & 0.01 $\pm$ 0.07 \\
+    door-expert-v1 & 105.35 $\pm$ 0.09 & 104.04 $\pm$ 1.46 & -0.33 $\pm$ 0.01 & 104.57 $\pm$ 0.31 & -0.32 $\pm$ 0.02 & \textbf{\underline{106.65 $\pm$ 0.25}} & 106.37 $\pm$ 0.29 & -0.33 $\pm$ 0.00 & 106.29 $\pm$ 1.73 & 104.87 $\pm$ 0.39 & 105.13 $\pm$ 2.20 \\
+    hammer-human-v1 & \textbf{\underline{3.03 $\pm$ 3.39}} & -0.19 $\pm$ 0.02 & 1.02 $\pm$ 0.24 & 1.01 $\pm$ 0.51 & 0.14 $\pm$ 0.11 & 1.79 $\pm$ 0.80 & 0.24 $\pm$ 0.24 & 0.24 $\pm$ 0.00 & 0.28 $\pm$ 0.18 & 1.28 $\pm$ 0.15 & 0.16 $\pm$ 0.16 \\
+    hammer-cloned-v1 & 0.55 $\pm$ 0.16 & 0.12 $\pm$ 0.08 & 0.25 $\pm$ 0.01 & 1.27 $\pm$ 2.11 & 0.30 $\pm$ 0.01 & 1.50 $\pm$ 0.69 & \textbf{\underline{5.00 $\pm$ 3.75}} & 0.14 $\pm$ 0.09 & 0.19 $\pm$ 0.07 & 1.82 $\pm$ 0.55 & 3.81 $\pm$ 1.47 \\
+    hammer-expert-v1 & 126.78 $\pm$ 0.64 & 121.75 $\pm$ 7.67 & 3.11 $\pm$ 0.03 & 127.08 $\pm$ 0.13 & 0.26 $\pm$ 0.01 & 128.68 $\pm$ 0.33 & \textbf{\underline{133.62 $\pm$ 0.27}} & 25.13 $\pm$ 43.25 & 28.52 $\pm$ 49.00 & 117.45 $\pm$ 6.65 & 133.58 $\pm$ 0.93 \\
+    relocate-human-v1 & 0.04 $\pm$ 0.03 & -0.14 $\pm$ 0.08 & -0.29 $\pm$ 0.01 & \textbf{\underline{0.45 $\pm$ 0.53}} & 0.06 $\pm$ 0.03 & 0.12 $\pm$ 0.04 & 0.16 $\pm$ 0.30 & -0.31 $\pm$ 0.01 & -0.17 $\pm$ 0.17 & 0.05 $\pm$ 0.01 & -0.02 $\pm$ 0.01 \\
+    relocate-cloned-v1 & -0.06 $\pm$ 0.01 & -0.00 $\pm$ 0.02 & -0.30 $\pm$ 0.01 & -0.01 $\pm$ 0.03 & -0.29 $\pm$ 0.01 & 0.04 $\pm$ 0.01 & \textbf{\underline{1.66 $\pm$ 2.59}} & -0.01 $\pm$ 0.10 & 0.17 $\pm$ 0.35 & 0.16 $\pm$ 0.09 & 0.76 $\pm$ 1.63 \\
+    relocate-expert-v1 & 107.58 $\pm$ 1.20 & 97.90 $\pm$ 5.21 & -1.73 $\pm$ 0.96 & \textbf{\underline{109.52 $\pm$ 0.47}} & -0.30 $\pm$ 0.02 & 106.11 $\pm$ 4.02 & 107.52 $\pm$ 2.28 & -0.36 $\pm$ 0.00 & 71.94 $\pm$ 18.37 & 104.28 $\pm$ 0.42 & 105.34 $\pm$ 5.23 \\
+    \midrule
+    \textit{Adroit avg} & 48.18 & 42.69 & 10.40 & 55.71 & 1.53 & 53.43 & 59.39 & 12.43 & 18.78 & 49.21 & 58.56 \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table*}
+
+\end{document}
